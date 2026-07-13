@@ -1,104 +1,159 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import HeroScene from './components/HeroScene'
 import './App.css'
 
-function useTypewriter(texts: string[], speed = 80, deleteSpeed = 40, pause = 2000) {
+function useTypewriter(texts: string[]) {
   const [display, setDisplay] = useState('')
-  const [textIdx, setTextIdx] = useState(0)
-  const [charIdx, setCharIdx] = useState(0)
+  const [idx, setIdx] = useState(0)
+  const [char, setChar] = useState(0)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    const current = texts[textIdx]
-    const timeout = setTimeout(() => {
+    const current = texts[idx]
+    const t = setTimeout(() => {
       if (!deleting) {
-        if (charIdx < current.length) {
-          setDisplay(current.slice(0, charIdx + 1))
-          setCharIdx(c => c + 1)
-        } else {
-          setTimeout(() => setDeleting(true), pause)
-        }
+        if (char < current.length) { setDisplay(current.slice(0, char + 1)); setChar(c => c + 1) }
+        else { setTimeout(() => setDeleting(true), 2000) }
       } else {
-        if (charIdx > 0) {
-          setDisplay(current.slice(0, charIdx - 1))
-          setCharIdx(c => c - 1)
-        } else {
-          setDeleting(false)
-          setTextIdx((textIdx + 1) % texts.length)
-        }
+        if (char > 0) { setDisplay(current.slice(0, char - 1)); setChar(c => c - 1) }
+        else { setDeleting(false); setIdx((idx + 1) % texts.length) }
       }
-    }, deleting ? deleteSpeed : speed)
-    return () => clearTimeout(timeout)
-  }, [charIdx, deleting, textIdx, texts, speed, deleteSpeed, pause])
+    }, deleting ? 35 : 70)
+    return () => clearTimeout(t)
+  }, [char, deleting, idx, texts])
 
   return display
 }
 
-function GlitchText({ text }: { text: string }) {
+function FadeIn({ children, delay = 0, x, y, className = '' }: { children: React.ReactNode; delay?: number; x?: number; y?: number; className?: string }) {
+  const ref = useRef(null)
+  const isIn = useInView(ref, { once: true, margin: '-80px' })
   return (
-    <span className="glitch" data-text={text}>
-      {text}
-    </span>
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, x: x ?? 0, y: y ?? 40 }}
+      animate={isIn ? { opacity: 1, x: 0, y: 0 } : {}}
+      transition={{ duration: 0.7, delay, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
+      {children}
+    </motion.div>
   )
 }
 
-function Section({ id, children, className = '' }: { id?: string; children: React.ReactNode; className?: string }) {
+function StaggerChildren({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const isIn = useInView(ref, { once: true, margin: '-60px' })
   return (
-    <motion.section
-      id={id}
+    <motion.div
       ref={ref}
       className={className}
-      initial={{ opacity: 0, y: 60 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+      variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: delay } } }}
+      initial="hidden"
+      animate={isIn ? 'visible' : 'hidden'}
     >
       {children}
-    </motion.section>
+    </motion.div>
   )
+}
+
+function StaggerItem({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div variants={{ hidden: { opacity: 0, y: 30 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } } }}>
+      {children}
+    </motion.div>
+  )
+}
+
+function GlitchText({ text }: { text: string }) {
+  return <span className="glitch" data-text={text}>{text}</span>
 }
 
 function SkillBar({ name, level, color }: { name: string; level: number; color: string }) {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true })
+  const isIn = useInView(ref, { once: true })
   return (
     <div className="skill-bar" ref={ref}>
       <div className="skill-bar-head">
         <span className="skill-name">{name}</span>
-        <span className="skill-pct" style={{ color }}>{level}%</span>
+        <motion.span
+          className="skill-pct"
+          style={{ color }}
+          initial={{ opacity: 0 }}
+          animate={isIn ? { opacity: 1 } : {}}
+          transition={{ delay: 0.6 }}
+        >
+          {level}%
+        </motion.span>
       </div>
       <div className="skill-track">
         <motion.div
           className="skill-fill"
           style={{ background: `linear-gradient(90deg, ${color}, var(--neon-cyan))` }}
           initial={{ width: 0 }}
-          animate={isInView ? { width: `${level}%` } : {}}
-          transition={{ duration: 1.2, ease: 'easeOut', delay: 0.2 }}
+          animate={isIn ? { width: `${level}%` } : {}}
+          transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }}
         />
       </div>
     </div>
   )
 }
 
-function ProjectCard({ title, desc, tags, link }: { title: string; desc: string; tags: string[]; link: string }) {
+function ProjectCard({ title, desc, tags, link, index }: { title: string; desc: string; tags: string[]; link: string; index: number }) {
   return (
     <motion.a
       href={link}
       target="_blank"
       rel="noreferrer"
       className="project-card"
-      whileHover={{ y: -6, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 300 } }}
+      whileTap={{ scale: 0.97 }}
     >
+      <motion.span
+        className="project-index"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: index * 0.15 }}
+      >
+        {String(index + 1).padStart(2, '0')}
+      </motion.span>
       <h3>{title}</h3>
       <p>{desc}</p>
       <div className="project-tags">
-        {tags.map(t => <span key={t} className="tag">{t}</span>)}
+        {tags.map((t, i) => (
+          <motion.span
+            key={t}
+            className="tag"
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 + i * 0.05 }}
+          >
+            {t}
+          </motion.span>
+        ))}
       </div>
+      <motion.span
+        className="project-arrow"
+        initial={{ x: 0 }}
+        whileHover={{ x: 4 }}
+      >
+        →
+      </motion.span>
     </motion.a>
   )
 }
+
+const roles = [
+  '🤖  I build AI that actually does things',
+  '🦜️  LangChain → LangGraph → Deep Agents',
+  '🔌  MCP → A2A → Agent Protocols',
+  '🏗️  Google ADK → Mastra → MS Agent Framework',
+  '☸️  Terraform → K8s → vLLM Deployments',
+  '🧠  Fullstack → AI DevOps → Neural Stack',
+]
 
 const skills = [
   { name: 'AI / ML Engineering', level: 90, color: '#FF006E' },
@@ -116,235 +171,205 @@ const skills = [
 const projects = [
   {
     title: 'OpenClaw',
-    desc: 'Personal AI assistant ecosystem connecting Telegram, WhatsApp, Discord → AI agents with skills engine, cron, and heartbeat automation.',
-    tags: ['TypeScript', 'MCP/ACP', 'Plugin SDK', '382k+ ⭐'],
+    desc: 'Personal AI assistant ecosystem connecting Telegram, WhatsApp, Discord → AI agents with skills engine, cron, and heartbeat automation. Core contributor to the 382k+ ⭐ project.',
+    tags: ['TypeScript', 'MCP/ACP', 'Plugin SDK'],
     link: 'https://github.com/openclaw/openclaw',
   },
   {
     title: '500 AI Agents Playbook',
-    desc: 'Curated catalog of 500+ AI agent projects across agent frameworks, protocols, and deployment patterns.',
+    desc: 'Curated catalog of 500+ AI agent projects across agent frameworks, protocols, deployment patterns, and reasoning architectures.',
     tags: ['Research', 'Agents', '2026'],
     link: 'https://github.com/deb888/500-AI-Agents-Playbook',
   },
   {
     title: 'Daily AI Workflows',
-    desc: 'GitHub Actions pipeline generating a unique AI agent workflow every day using Gemini 2.5 Flash.',
+    desc: 'GitHub Actions pipeline generating a unique AI agent workflow every day using Gemini 2.5 Flash, with optional LinkedIn posting.',
     tags: ['Python', 'Gemini', 'GHA'],
     link: 'https://github.com/deb888/daily-ai-workflows',
   },
   {
     title: 'AI DevOps Pipeline',
-    desc: 'Enterprise ML infrastructure: 50+ clusters, 500+ services, model serving with vLLM and K8s.',
-    tags: ['K8s', 'Terraform', 'vLLM', '99.99%'],
+    desc: 'Enterprise ML infrastructure managing 50+ clusters and 500+ services with vLLM model serving, Terraform, and ArgoCD GitOps.',
+    tags: ['K8s', 'Terraform', 'vLLM'],
     link: 'https://github.com/deb888',
   },
 ]
 
-const roles = [
-  '🤖 I build AI that actually does things',
-  '🦜️ LangChain → LangGraph → Deep Agents',
-  '🔌 MCP → A2A → Agent Protocols',
-  '🏗️ Google ADK → Mastra → MS Agent Framework',
-  '☸️ Terraform → K8s → vLLM Deployments',
-  '🧠 Fullstack → AI DevOps → Neural Stack',
-]
-
 export default function App() {
   const { scrollYProgress } = useScroll()
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.5], [0, 0.8])
-  const typed = useTypewriter(roles, 70, 35, 2000)
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0])
+  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 0.95])
+  const typed = useTypewriter(roles)
   const cursorRef = useRef<HTMLSpanElement>(null)
-  const [stars, setStars] = useState<{ x: number; y: number; size: number; delay: number }[]>([])
-
-  useEffect(() => {
-    setStars(
-      Array.from({ length: 60 }, () => ({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        size: Math.random() * 2.5 + 0.5,
-        delay: Math.random() * 3,
-      }))
-    )
-  }, [])
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (cursorRef.current) {
-        cursorRef.current.style.opacity =
-          cursorRef.current.style.opacity === '1' ? '0' : '1'
-      }
+      if (cursorRef.current) cursorRef.current.style.opacity = cursorRef.current.style.opacity === '1' ? '0' : '1'
     }, 530)
     return () => clearInterval(interval)
   }, [])
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
-  }
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 
   return (
     <div className="app">
-      <motion.div className="bg-overlay" style={{ opacity: bgOpacity }} />
-
-      {stars.map((s, i) => (
-        <motion.div
-          key={i}
-          className="star"
-          style={{ left: s.x, top: s.y, width: s.size, height: s.size }}
-          animate={{ opacity: [0, 1, 0], scale: [0, 1, 0] }}
-          transition={{ duration: 2, repeat: Infinity, delay: s.delay }}
-        />
-      ))}
-
       <nav className="nav">
-        <span className="nav-logo" onClick={() => scrollTo('hero')}>
-          <span className="nav-deco">[</span>deb888<span className="nav-deco">]</span>
-        </span>
+        <motion.span
+          className="nav-logo"
+          onClick={() => scrollTo('hero')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span className="nav-deco">&gt;</span> deb888
+        </motion.span>
         <div className="nav-links">
           {['about', 'skills', 'projects', 'contact'].map(s => (
-            <button key={s} onClick={() => scrollTo(s)} className="nav-link">
+            <motion.button
+              key={s}
+              onClick={() => scrollTo(s)}
+              className="nav-link"
+              whileHover={{ color: '#00FFE7' }}
+              whileTap={{ scale: 0.95 }}
+            >
               /{s}
-            </button>
+            </motion.button>
           ))}
         </div>
       </nav>
 
       <section id="hero" className="hero">
-        <div className="hero-content">
+        <HeroScene />
+        <motion.div className="hero-overlay" style={{ opacity: heroOpacity }}>
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="hero-content"
+            style={{ scale: heroScale }}
           >
             <motion.p
               className="hero-greeting"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
             >
               Hello, I'm
             </motion.p>
+
             <motion.h1
               className="hero-name"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
+              transition={{ delay: 0.5, duration: 0.8, type: 'spring', stiffness: 120 }}
             >
               <GlitchText text="Bruce Deb" />
             </motion.h1>
+
             <motion.p
               className="hero-tagline"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
+              transition={{ delay: 0.8 }}
             >
               AI Developer · Fullstack Architect · AI DevOps Engineer
             </motion.p>
-          </motion.div>
 
-          <motion.div
-            className="hero-typing"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-          >
-            <span className="typing-text">{typed}</span>
-            <span className="typing-cursor" ref={cursorRef}>|</span>
-          </motion.div>
-
-          <motion.div
-            className="hero-cta"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4 }}
-          >
-            <motion.button
-              className="btn-primary"
-              onClick={() => scrollTo('projects')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <motion.div
+              className="hero-typing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.1 }}
             >
-              View Projects
-            </motion.button>
-            <motion.button
-              className="btn-secondary"
-              onClick={() => scrollTo('contact')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Contact Me
-            </motion.button>
-          </motion.div>
+              <span className="typing-label">$ </span>
+              <span className="typing-text">{typed}</span>
+              <span className="typing-cursor" ref={cursorRef}>█</span>
+            </motion.div>
 
-          <motion.div
-            className="hero-stats"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.8 }}
-          >
-            <div className="stat">
-              <span className="stat-num">382k+</span>
-              <span className="stat-label">GitHub Stars</span>
-            </div>
-            <div className="stat-divider" />
-            <div className="stat">
-              <span className="stat-num">500+</span>
-              <span className="stat-label">AI Projects</span>
-            </div>
-            <div className="stat-divider" />
-            <div className="stat">
-              <span className="stat-num">10+</span>
-              <span className="stat-label">Years Building</span>
-            </div>
+            <motion.div
+              className="hero-cta"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.5, type: 'spring', stiffness: 200 }}
+            >
+              <motion.button
+                className="btn-primary"
+                onClick={() => scrollTo('projects')}
+                whileHover={{ scale: 1.05, boxShadow: '0 0 30px rgba(0, 255, 231, 0.4)' }}
+                whileTap={{ scale: 0.95 }}
+              >
+                View Projects
+              </motion.button>
+              <motion.button
+                className="btn-secondary"
+                onClick={() => scrollTo('contact')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Contact
+              </motion.button>
+            </motion.div>
+
+            <motion.div
+              className="hero-stats"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 2 }}
+            >
+              {[
+                { num: '382k+', label: 'GitHub Stars' },
+                { num: '500+', label: 'AI Projects' },
+                { num: '10+', label: 'Years Building' },
+              ].map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  className="stat"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 2.2 + i * 0.15, type: 'spring', stiffness: 100 }}
+                >
+                  <span className="stat-num">{s.num}</span>
+                  <span className="stat-label">{s.label}</span>
+                </motion.div>
+              ))}
+            </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
 
         <motion.div
           className="scroll-indicator"
           animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
           onClick={() => scrollTo('about')}
         >
           <span>scroll</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3v10M4 9l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 3v8M4 8l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </motion.div>
       </section>
 
       <div className="sections-container">
-        <Section id="about" className="about-section">
-          <motion.h2 className="section-title">
-            <span className="title-accent">/</span> about
-          </motion.h2>
+        <section id="about">
+          <FadeIn>
+            <h2 className="section-title"><span className="title-accent">/</span> about</h2>
+          </FadeIn>
           <div className="about-grid">
-            <motion.div
-              className="about-text"
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <p>
-                I build AI-powered applications end-to-end — from React Native mobile apps
-                to LangChain agent swarms deployed on Kubernetes. My philosophy:
-              </p>
-              <blockquote className="about-quote">
-                "Fullstack is the foundation. LangChain is the brain. Kubernetes is the body. OpenClaw is the heartbeat."
-              </blockquote>
-              <p>
-                Core contributor to <strong>OpenClaw</strong> (382k+ ⭐), building the
-                skills engine, automation layer, and plugin SDK. Deep into MCP, A2A, and
-                the 2026 agent protocol stack.
-              </p>
-            </motion.div>
-            <motion.div
-              className="about-yaml"
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <pre><code>{`name: Bruce Deb
+            <FadeIn x={-30} delay={0.1}>
+              <div className="about-text">
+                <p>
+                  I build AI-powered applications end-to-end — from React Native mobile apps
+                  to LangChain agent swarms deployed on Kubernetes.
+                </p>
+                <blockquote className="about-quote">
+                  "Fullstack is the foundation. LangChain is the brain. Kubernetes is the body. OpenClaw is the heartbeat."
+                </blockquote>
+                <p>
+                  Core contributor to <strong>OpenClaw</strong> (382k+ ⭐), building the
+                  skills engine, automation layer, and plugin SDK. Deep into MCP, A2A, and
+                  the 2026 agent protocol stack.
+                </p>
+              </div>
+            </FadeIn>
+            <FadeIn x={30} delay={0.2}>
+              <div className="about-yaml">
+                <pre><code>{`name: Bruce Deb
 handle: deb888
 role: AI Developer
 mission: AI apps end-to-end
@@ -354,104 +379,92 @@ stack:
   mobile: React Native·Expo
   infra:  K8s·Terraform·Serverless
 engine:  OpenClaw`}</code></pre>
-            </motion.div>
+              </div>
+            </FadeIn>
           </div>
-        </Section>
+        </section>
 
-        <Section id="skills" className="skills-section">
-          <motion.h2 className="section-title">
-            <span className="title-accent">/</span> skills
-          </motion.h2>
-          <div className="skills-grid">
-            {skills.map((s, i) => (
-              <motion.div
-                key={s.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-              >
+        <section id="skills">
+          <FadeIn>
+            <h2 className="section-title"><span className="title-accent">/</span> skills</h2>
+          </FadeIn>
+          <StaggerChildren className="skills-grid">
+            {skills.map(s => (
+              <StaggerItem key={s.name}>
                 <SkillBar name={s.name} level={s.level} color={s.color} />
-              </motion.div>
+              </StaggerItem>
             ))}
-          </div>
-          <motion.div
-            className="skills-more"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <span>+ Angular 18+ · React · NestJS · PostgreSQL · Redis · Kafka · Istio · ArgoCD · vLLM · LangSmith · MLflow · Datadog</span>
-          </motion.div>
-        </Section>
+          </StaggerChildren>
+          <FadeIn delay={0.3}>
+            <motion.div
+              className="skills-more"
+              whileHover={{ color: '#00FFE7' }}
+            >
+              + Angular 18+ · React · NestJS · PostgreSQL · Redis · Kafka · Istio · ArgoCD · vLLM · LangSmith · MLflow · Datadog
+            </motion.div>
+          </FadeIn>
+        </section>
 
-        <Section id="projects" className="projects-section">
-          <motion.h2 className="section-title">
-            <span className="title-accent">/</span> projects
-          </motion.h2>
+        <section id="projects">
+          <FadeIn>
+            <h2 className="section-title"><span className="title-accent">/</span> projects</h2>
+          </FadeIn>
           <div className="projects-grid">
             {projects.map((p, i) => (
-              <motion.div
-                key={p.title}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15, duration: 0.6 }}
-              >
-                <ProjectCard {...p} />
-              </motion.div>
+              <FadeIn key={p.title} y={30} delay={i * 0.12}>
+                <ProjectCard {...p} index={i} />
+              </FadeIn>
             ))}
           </div>
-        </Section>
+        </section>
 
-        <Section id="contact" className="contact-section">
-          <motion.h2 className="section-title">
-            <span className="title-accent">/</span> connect
-          </motion.h2>
-          <motion.p
-            className="contact-sub"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            Let's build the next generation of AI agents.
-          </motion.p>
+        <section id="contact" className="contact-section">
+          <FadeIn>
+            <h2 className="section-title"><span className="title-accent">/</span> connect</h2>
+          </FadeIn>
+          <FadeIn delay={0.1}>
+            <p className="contact-sub">Let's build the next generation of AI agents.</p>
+          </FadeIn>
           <div className="contact-links">
             {[
               { href: 'https://github.com/deb888', label: 'GitHub', icon: 'GH' },
               { href: 'https://linkedin.com/in/brucedeb', label: 'LinkedIn', icon: 'LI' },
-              { href: 'mailto:bruce@deb888.dev', label: 'Email', icon: '@' },
+              { href: 'mailto:wwwdeb888@gmail.com', label: 'Email', icon: '@' },
               { href: 'https://github.com/openclaw/openclaw', label: 'OpenClaw', icon: 'OC' },
             ].map((link, i) => (
-              <motion.a
-                key={link.label}
-                href={link.href}
-                target="_blank"
-                rel="noreferrer"
-                className="contact-link"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ scale: 1.05, y: -3 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <span className="contact-icon">{link.icon}</span>
-                <span className="contact-label">{link.label}</span>
-              </motion.a>
+              <FadeIn key={link.label} y={15} delay={0.15 + i * 0.08}>
+                <motion.a
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="contact-link"
+                  whileHover={{ scale: 1.05, y: -4, borderColor: '#00FFE7' }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <span className="contact-icon">{link.icon}</span>
+                  <span className="contact-label">{link.label}</span>
+                  <motion.span
+                    className="contact-arrow"
+                    initial={{ opacity: 0, x: -4 }}
+                    whileHover={{ opacity: 1, x: 2 }}
+                  >
+                    ↗
+                  </motion.span>
+                </motion.a>
+              </FadeIn>
             ))}
           </div>
-        </Section>
+        </section>
       </div>
 
       <footer className="footer">
-        <p>
-          <span className="footer-deco">&lt;/&gt;</span> built with{' '}
-          <a href="https://github.com/deb888/deb888" target="_blank" rel="noreferrer">
-            OpenCode
-          </a>{' '}
-          · debrowse 2026
-        </p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+        >
+          <span className="footer-deco">&lt;/&gt;</span> built with OpenCode · wwwdeb888@gmail.com
+        </motion.p>
       </footer>
     </div>
   )
