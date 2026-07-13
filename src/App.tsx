@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import HeroScene from './components/HeroScene'
+import VideoBackground from './components/VideoBackground'
 import './App.css'
 
 function useTypewriter(texts: string[]) {
@@ -238,6 +239,7 @@ export default function App() {
       </nav>
 
       <section id="hero" className="hero">
+        <VideoBackground />
         <HeroScene />
         <motion.div className="hero-overlay" style={{ opacity: heroOpacity }}>
           <motion.div
