@@ -244,6 +244,16 @@ export default function App() {
             className="hero-content"
             style={{ scale: heroScale }}
           >
+            <motion.div
+              className="hero-badge"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              <span className="hero-badge-dot" />
+              SYSTEM ONLINE
+            </motion.div>
+
             <motion.p
               className="hero-greeting"
               initial={{ opacity: 0, y: -10 }}
@@ -277,7 +287,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               transition={{ delay: 1.1 }}
             >
-              <span className="typing-label">$ </span>
+              <span className="typing-prompt">$ </span>
               <span className="typing-text">{typed}</span>
               <span className="typing-cursor" ref={cursorRef}>█</span>
             </motion.div>
