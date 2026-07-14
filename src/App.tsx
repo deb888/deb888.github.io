@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
 import HeroScene from './components/HeroScene'
 import VideoBackground from './components/VideoBackground'
+import AIAvatar from './components/AIAvatar'
 import './App.css'
 
 function useTypewriter(texts: string[]) {
@@ -478,6 +479,8 @@ engine:  OpenClaw`}</code></pre>
           <span className="footer-deco">&lt;/&gt;</span> built with OpenCode · wwwdeb888@gmail.com
         </motion.p>
       </footer>
+
+      <AIAvatar />
     </div>
   )
 }
