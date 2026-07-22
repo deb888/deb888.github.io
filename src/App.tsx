@@ -195,6 +195,18 @@ const projects = [
     tags: ['K8s', 'Terraform', 'vLLM'],
     link: 'https://github.com/deb888',
   },
+  {
+    title: 'AEMO Energy Agent',
+    desc: 'Autonomous NEM wholesale market monitoring agent. Daily scrapes live Australian electricity data via OpenElectricity API and Groq LLM for structured market briefs.',
+    tags: ['Python', 'Groq', 'FastAPI', 'React'],
+    link: 'https://github.com/deb888/aemo-energy-agent',
+  },
+  {
+    title: 'LinkedIn Publisher Mastra',
+    desc: 'Autonomous LinkedIn content pipeline using Mastra workflows, Groq llama-3.3-70b, and Unsplash/Sharp image pipeline. Drafts, illustrates, and publishes with zero manual input.',
+    tags: ['TypeScript', 'Mastra', 'Groq', 'LinkedIn API'],
+    link: 'https://github.com/deb888/linkedin-publisher-mastra',
+  },
 ]
 
 export default function App() {
