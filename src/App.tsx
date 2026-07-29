@@ -257,6 +257,143 @@ const projects = [
   },
 ]
 
+const allRepos = [
+  {
+    title: 'my-video',
+    desc: '15-second Remotion video — animated bar chart rendered with a cyberpunk theme.',
+    tags: ['TypeScript', 'Remotion'],
+    link: 'https://github.com/deb888/my-video',
+  },
+  {
+    title: 'react-mastery',
+    desc: 'React Mastery — exploratory / early-stage repository.',
+    tags: ['JavaScript'],
+    link: 'https://github.com/deb888/react-mastery',
+  },
+  {
+    title: 'coderag',
+    desc: 'Local RAG code assistant powered by AirLLM — retrieval-augmented code Q&A running fully offline.',
+    tags: ['Python', 'RAG', 'AirLLM'],
+    link: 'https://github.com/deb888/coderag',
+  },
+  {
+    title: 'AutoarchitectPP',
+    desc: 'Autonomous architecture decision intelligence platform — AEMO research, market analysis, and automated diagram generation.',
+    tags: ['Python', 'AI Agents', 'Diagrams'],
+    link: 'https://github.com/deb888/AutoarchitectPP',
+  },
+  {
+    title: 'gesture-chrome',
+    desc: 'Hand pinch gesture detection via MediaPipe + OpenCV — pinch thumb and index finger to open Google Chrome.',
+    tags: ['Python', 'MediaPipe', 'OpenCV'],
+    link: 'https://github.com/deb888/gesture-chrome',
+  },
+  {
+    title: 'RAG-AIAgent',
+    desc: 'Rag Aiagent — exploratory / early-stage repository.',
+    tags: ['Python'],
+    link: 'https://github.com/deb888/RAG-AIAgent',
+  },
+  {
+    title: 'Rag-public-agent',
+    desc: 'Rag Public Agent — exploratory / early-stage repository.',
+    tags: ['Repo'],
+    link: 'https://github.com/deb888/Rag-public-agent',
+  },
+  {
+    title: 'portCommunication',
+    desc: 'Port Communication — exploratory / early-stage repository.',
+    tags: ['Java'],
+    link: 'https://github.com/deb888/portCommunication',
+  },
+  {
+    title: 'ebayf',
+    desc: 'Ebayf — exploratory / early-stage repository.',
+    tags: ['HTML'],
+    link: 'https://github.com/deb888/ebayf',
+  },
+  {
+    title: 'offset',
+    desc: 'Offset — exploratory / early-stage repository.',
+    tags: ['TypeScript'],
+    link: 'https://github.com/deb888/offset',
+  },
+  {
+    title: 'fastapi-crud-mongo',
+    desc: 'Fastapi Crud Mongo — exploratory / early-stage repository.',
+    tags: ['Python'],
+    link: 'https://github.com/deb888/fastapi-crud-mongo',
+  },
+  {
+    title: 'ring',
+    desc: 'Ring — exploratory / early-stage repository.',
+    tags: ['TypeScript'],
+    link: 'https://github.com/deb888/ring',
+  },
+  {
+    title: 'reactDotnet',
+    desc: 'React Dotnet — exploratory / early-stage repository.',
+    tags: ['C#'],
+    link: 'https://github.com/deb888/reactDotnet',
+  },
+  {
+    title: 'NestJs-Progressive-Framwork',
+    desc: 'Nest Js Progressive Framwork — exploratory / early-stage repository.',
+    tags: ['TypeScript'],
+    link: 'https://github.com/deb888/NestJs-Progressive-Framwork',
+  },
+  {
+    title: 'videooffer',
+    desc: 'webrtc based video offer',
+    tags: ['JavaScript'],
+    link: 'https://github.com/deb888/videooffer',
+  },
+  {
+    title: 'react-redux-based-component-lib',
+    desc: 'React Redux Based Component Lib — exploratory / early-stage repository.',
+    tags: ['Repo'],
+    link: 'https://github.com/deb888/react-redux-based-component-lib',
+  },
+  {
+    title: 'redis-catch-nodejs',
+    desc: 'how to use redis in node js for catch purpose',
+    tags: ['JavaScript'],
+    link: 'https://github.com/deb888/redis-catch-nodejs',
+  },
+  {
+    title: 'reactbasedChatapp',
+    desc: 'Reactbased Chatapp — exploratory / early-stage repository.',
+    tags: ['JavaScript'],
+    link: 'https://github.com/deb888/reactbasedChatapp',
+  },
+  {
+    title: 'nodejswith-docker',
+    desc: 'Nodejswith Docker — exploratory / early-stage repository.',
+    tags: ['Dockerfile'],
+    link: 'https://github.com/deb888/nodejswith-docker',
+  },
+  {
+    title: 'csrtrack',
+    desc: 'Csrtrack — exploratory / early-stage repository.',
+    tags: ['JavaScript', 'csr', 'ongoing'],
+    link: 'https://github.com/deb888/csrtrack',
+  },
+  {
+    title: 'finalmpadminpanel',
+    desc: 'Finalmpadminpanel — exploratory / early-stage repository.',
+    tags: ['TypeScript'],
+    link: 'https://github.com/deb888/finalmpadminpanel',
+  },
+  {
+    title: 'angularstartup',
+    desc: 'Angularstartup — exploratory / early-stage repository.',
+    tags: ['TypeScript'],
+    link: 'https://github.com/deb888/angularstartup',
+  },
+]
+
+const allProjects = [...projects, ...allRepos]
+
 export default function App() {
   const { scrollYProgress } = useScroll()
   const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0])
@@ -485,7 +622,7 @@ engine:  OpenClaw`}</code></pre>
             <h2 className="section-title"><span className="title-accent">/</span> projects</h2>
           </FadeIn>
           <div className="projects-grid">
-            {projects.map((p, i) => (
+            {allProjects.map((p, i) => (
               <FadeIn key={p.title} y={30} delay={i * 0.12}>
                 <ProjectCard {...p} index={i} />
               </FadeIn>
