@@ -3,7 +3,66 @@ import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring }
 import HeroScene from './components/HeroScene'
 import VideoBackground from './components/VideoBackground'
 import AIAvatar from './components/AIAvatar'
+import avatarPhoto from './assets/avatar.webp'
 import './App.css'
+
+function HeroAvatar() {
+  const ref = useRef<HTMLDivElement>(null)
+  const reduceMotion = useRef(false)
+  const rotateX = useSpring(0, { stiffness: 200, damping: 20 })
+  const rotateY = useSpring(0, { stiffness: 200, damping: 20 })
+
+  useEffect(() => {
+    reduceMotion.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }, [])
+
+  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (reduceMotion.current) return
+    const rect = ref.current?.getBoundingClientRect()
+    if (!rect) return
+    const px = (e.clientX - rect.left) / rect.width
+    const py = (e.clientY - rect.top) / rect.height
+    rotateY.set((px - 0.5) * 22)
+    rotateX.set((0.5 - py) * 22)
+  }
+  const handleLeave = () => { rotateX.set(0); rotateY.set(0) }
+
+  return (
+    <motion.div
+      className="hero-avatar-wrap"
+      initial={{ opacity: 0, scale: 0.4, filter: 'blur(24px)' }}
+      animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+      transition={{ delay: 0.15, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <motion.span
+        className="hero-avatar-ring hero-avatar-ring--cyan"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.span
+        className="hero-avatar-ring hero-avatar-ring--pink"
+        animate={{ rotate: -360 }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+      />
+      <motion.div
+        ref={ref}
+        className="hero-avatar-frame"
+        style={{ rotateX, rotateY, transformPerspective: 900 }}
+        onMouseMove={handleMove}
+        onMouseLeave={handleLeave}
+      >
+        <span className="hero-avatar-ghost hero-avatar-ghost--cyan" style={{ backgroundImage: `url(${avatarPhoto})` }} />
+        <span className="hero-avatar-ghost hero-avatar-ghost--pink" style={{ backgroundImage: `url(${avatarPhoto})` }} />
+        <img src={avatarPhoto} alt="Bruce Deb" className="hero-avatar-img" />
+        <motion.span
+          className="hero-avatar-scan"
+          animate={{ y: ['-110%', '110%'] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: 'linear', delay: 1.2 }}
+        />
+      </motion.div>
+    </motion.div>
+  )
+}
 
 function ScrollProgress() {
   const { scrollYProgress } = useScroll()
@@ -446,6 +505,8 @@ export default function App() {
             className="hero-content"
             style={{ scale: heroScale }}
           >
+            <HeroAvatar />
+
             <motion.div
               className="hero-badge"
               initial={{ opacity: 0, y: -10 }}
