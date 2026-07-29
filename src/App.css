@@ -1,5 +1,31 @@
 .app { position: relative; min-height: 100vh; }
 
+/* ── Scroll Progress ── */
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  transform-origin: 0%;
+  background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+  box-shadow: 0 0 8px rgba(0, 255, 231, 0.5);
+  z-index: 10002;
+}
+
+/* ── Cursor Glow ── */
+.cursor-glow {
+  position: fixed;
+  width: 420px;
+  height: 420px;
+  margin-left: -210px;
+  margin-top: -210px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 255, 231, 0.06), rgba(255, 0, 110, 0.03) 45%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+@media (hover: none) { .cursor-glow { display: none; } }
+
 /* ── Scanline Overlay ── */
 .app::after {
   content: '';
@@ -491,8 +517,19 @@ section { padding: 6rem 0; }
   text-decoration: none;
   transition: border-color 0.25s ease-out, background 0.25s ease-out;
   overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 .project-card:hover { border-color: rgba(0, 255, 231, 0.2); background: rgba(22, 22, 31, 0.8); }
+
+.project-card-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+.project-card:hover .project-card-glow { opacity: 1; }
 
 .project-index {
   position: absolute;
@@ -951,5 +988,6 @@ section { padding: 6rem 0; }
   .hero-scene { display: none; }
   .video-bg { display: none; }
   .app::after { display: none; }
+  .cursor-glow { display: none; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

@@ -1,9 +1,31 @@
 import { useEffect, useState, useRef } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform, useInView, useMotionValue, useSpring } from 'framer-motion'
 import HeroScene from './components/HeroScene'
 import VideoBackground from './components/VideoBackground'
 import AIAvatar from './components/AIAvatar'
 import './App.css'
+
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, { stiffness: 200, damping: 30, restDelta: 0.001 })
+  return <motion.div className="scroll-progress" style={{ scaleX }} />
+}
+
+function CursorGlow() {
+  const x = useMotionValue(-200)
+  const y = useMotionValue(-200)
+  const sx = useSpring(x, { stiffness: 300, damping: 30, mass: 0.5 })
+  const sy = useSpring(y, { stiffness: 300, damping: 30, mass: 0.5 })
+
+  useEffect(() => {
+    if (window.matchMedia('(hover: none), (prefers-reduced-motion: reduce)').matches) return
+    const handler = (e: MouseEvent) => { x.set(e.clientX); y.set(e.clientY) }
+    window.addEventListener('mousemove', handler)
+    return () => window.removeEventListener('mousemove', handler)
+  }, [x, y])
+
+  return <motion.div className="cursor-glow" style={{ left: sx, top: sy }} />
+}
 
 function useTypewriter(texts: string[]) {
   const [display, setDisplay] = useState('')
@@ -103,15 +125,41 @@ function SkillBar({ name, level, color }: { name: string; level: number; color: 
 }
 
 function ProjectCard({ title, desc, tags, link, index }: { title: string; desc: string; tags: string[]; link: string; index: number }) {
+  const ref = useRef<HTMLAnchorElement>(null)
+  const rotateX = useSpring(0, { stiffness: 300, damping: 25 })
+  const rotateY = useSpring(0, { stiffness: 300, damping: 25 })
+  const glowX = useMotionValue(50)
+  const glowY = useMotionValue(50)
+
+  const handleMove = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    const rect = ref.current?.getBoundingClientRect()
+    if (!rect) return
+    const px = (e.clientX - rect.left) / rect.width
+    const py = (e.clientY - rect.top) / rect.height
+    rotateY.set((px - 0.5) * 14)
+    rotateX.set((0.5 - py) * 14)
+    glowX.set(px * 100)
+    glowY.set(py * 100)
+  }
+  const handleLeave = () => { rotateX.set(0); rotateY.set(0) }
+
   return (
     <motion.a
+      ref={ref}
       href={link}
       target="_blank"
       rel="noreferrer"
       className="project-card"
+      style={{ rotateX, rotateY, transformPerspective: 800 }}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
       whileHover={{ y: -8, scale: 1.02, transition: { type: 'spring', stiffness: 300 } }}
       whileTap={{ scale: 0.97 }}
     >
+      <motion.div
+        className="project-card-glow"
+        style={{ background: useTransform([glowX, glowY], ([gx, gy]) => `radial-gradient(280px circle at ${gx}% ${gy}%, rgba(0, 255, 231, 0.08), transparent 70%)`) }}
+      />
       <motion.span
         className="project-index"
         initial={{ opacity: 0 }}
@@ -227,6 +275,8 @@ export default function App() {
 
   return (
     <div className="app">
+      <ScrollProgress />
+      <CursorGlow />
       <nav className="nav">
         <motion.span
           className="nav-logo"
