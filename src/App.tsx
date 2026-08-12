@@ -314,6 +314,12 @@ const projects = [
     tags: ['TypeScript', 'Mastra', 'Groq', 'LinkedIn API'],
     link: 'https://github.com/deb888/linkedin-publisher-mastra',
   },
+  {
+    title: 'Community Battery Orchestration',
+    desc: 'AI-supervised community battery dispatch: Timestream telemetry ingestion, 4-agent Bedrock market strategy, deterministic GuardrailService, BullMQ 5-min settlement, MQTT dispatch, DynamoDB audit trail.',
+    tags: ['NestJS', 'AWS', 'Bedrock', 'BullMQ'],
+    link: 'https://github.com/deb888/community-battery-orchestration',
+  },
 ]
 
 const allRepos = [
